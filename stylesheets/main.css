@@ -1,0 +1,28 @@
+html body {
+  font-family: 'Sacramento', cursive;
+}
+
+.container {
+  margin-top: calc(25vh);
+}
+
+.greeting-text {
+  text-align: center;
+  font-size: 64px;
+  margin: 25px auto;
+  color: #777;
+}
+
+.img {
+  border: 1px solid #aaa;
+  display: block;
+  margin: 0 auto;
+}
+
+.img-responsive {
+  width: 10%;
+}
+
+.img-circle {
+  border-radius: 50%;
+}
