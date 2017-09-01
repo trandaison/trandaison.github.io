@@ -1,9 +1,12 @@
 html body {
   font-family: 'Sacramento', cursive;
+  margin: 0;
 }
 
 .container {
   margin-top: calc(25vh);
+  width: 100%;
+  position: absolute;
 }
 
 .greeting-text {
