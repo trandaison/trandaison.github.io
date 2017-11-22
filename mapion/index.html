@@ -189,9 +189,17 @@
           polyline.addLatLng(newPoint);
           // map.fitBounds(polyline.getBounds()); // Zoom in to fit the polyline.
           // L.circle(newPoint, 100).addTo(map);
+          // polyline.bindPopup(polyline.lengthInKm() + "km", {closeButton: false})
+          //   .setLatLng(newPoint)
+          //   .openPopup();
+        var popup = L.popup({closeButton: false})
+          .setLatLng(newPoint)
+          .setContent(polyline.lengthInKm() + "km")
+          .openOn(map);
+        L.circleMarker(newPoint).addTo(map);
         } else {
           polyline = L.polyline(points, {color: 'red', weight: 4, opacity: 0.9}).addTo(map);
-          var startMaker = new L.marker(newPoint).addTo(map);          
+          L.marker(newPoint).addTo(map);
           // L.circle(newPoint, 100).addTo(map);
         }
         if (isNearBounders(event, map)) {
