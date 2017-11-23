@@ -64,7 +64,7 @@
       var polyline = null;
       var color = "red";
       var points = [];
-      var lastMaker = null;
+      var lastMarker = null;
       var polylineA = null;
       var polylineB = null;
       var polylineC = null;
@@ -78,6 +78,7 @@
           var newPoint = event.latlng;
           switch (routeTab) {
             case "a":
+              color = "red";
               polyline = polylineA;
               points = pointsA;
               break;
@@ -95,18 +96,24 @@
           points.push(newPoint);
           if (polyline) {
             polyline.addLatLng(newPoint);
-            L.popup({closeButton: false})
+            L.popup()
               .setLatLng(newPoint)
               .setContent(polyline.lengthInKm() + "km")
               .openOn(map);
-            lastMaker = L.circleMarker(newPoint).addTo(map);
+            // lastMarker = L.circleMarker(newPoint, {draggable: true}).addTo(map);
           } else {
             polyline = L.polyline(points, {color: color, weight: 4, opacity: 0.9}).addTo(map);
-            lastMaker = L.marker(newPoint).addTo(map);
+            // lastMarker = L.marker(newPoint, {draggable: true}).addTo(map);
           }
           if (isNearBounders(event, map)) {
             map.panTo(newPoint);
           }
+          lastMarker = L.marker(newPoint, {draggable: true}).addTo(map);
+          lastMarker
+            .on('dragstart', dragStartHandler)
+            .on('drag', dragHandler)
+            .on('dragend', dragEndHandler);
+
           switch (routeTab) {
             case "a":
               polylineA = polyline;
@@ -143,16 +150,10 @@
           $(this).addClass("active");
         });
 
-        $('[data-toolbar-actions="undo"]').on("click", function(e) {
-          var routeTab = getRouteTab();
-          polyline.remove();
-          lastMaker.remove();
-          points.pop();
-          if (polyline) {
-            polyline = L.polyline(points, {color: color, weight: 4, opacity: 0.9}).addTo(map);
-            return e;
-          } else {
-            return false;
+        $('[data-toolbar-actions="undo"]').on("click", undo);
+        $(window).on("keydown", function(e) {
+          if (detectUndoByKeyboard(e)) {
+            undo(e);
           }
         });
       });
@@ -169,6 +170,45 @@
         var MAX_X = map.getSize().x;
         var MAX_Y = map.getSize().y;
         return X < OFFSET || Y < OFFSET || (X > MAX_X - OFFSET) || (Y > MAX_Y - OFFSET)
+      }
+
+      function dragStartHandler(e) {
+        var latlngs = polyline.getLatLngs();
+        var latlng = this.getLatLng();
+        for (var i = 0; i < latlngs.length; i++) {
+          if (latlng.equals(latlngs[i])) {
+            this.polylineLatlng = i;
+          }
+        }
+      }
+
+      function dragHandler(e) {
+        var latlngs = polyline.getLatLngs();
+        var latlng = this.getLatLng();
+        latlngs.splice(this.polylineLatlng, 1, latlng); // Replace this.polylineLatlng by latlng
+        polyline.setLatLngs(latlngs);
+      }
+
+      function dragEndHandler(e) {
+        delete this.polylineLatlng;
+      }
+
+      function detectUndoByKeyboard(event) {
+        var Z_KEY = 90;
+        return event.keyCode == Z_KEY && event.ctrlKey;
+      }
+
+      function undo(e) {
+        var routeTab = getRouteTab();
+        polyline.remove();
+        lastMarker.remove();
+        points.pop();
+        if (polyline) {
+          polyline = L.polyline(points, {color: color, weight: 4, opacity: 0.9}).addTo(map);
+          return e;
+        } else {
+          return false;
+        }
       }
     </script>
   </body>
