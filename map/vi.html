@@ -30,23 +30,19 @@
     <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
       integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
       crossorigin=""></script>
-    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
-      integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
-      crossorigin=""></script>
+    <script src="../libraries/leaflet.geometryutil.js" charset="utf-8"></script>
     <script
       src="https://code.jquery.com/jquery-3.2.1.min.js"
       integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
       crossorigin="anonymous"></script>
     <script type="text/javascript">
       L.Polyline.prototype.lengthInKm = function () {
-        var metros_totales_ruta = 0;
-        var coordenadas_iniciales = null;
-        var array_coordenadas_polilinea = this._latlngs;
-        for (i = 0; i < array_coordenadas_polilinea.length - 1; i++) {
-          coordenadas_iniciales = array_coordenadas_polilinea[i];
-          metros_totales_ruta  += coordenadas_iniciales.distanceTo(array_coordenadas_polilinea[i + 1]);
+        var totalDistance = 0; // In meter
+        var points = this._latlngs;
+        for (i = 0; i < points.length - 1; i++) {
+          totalDistance += points[i].distanceTo(points[i + 1]);
         }
-        return (metros_totales_ruta / 1000).toFixed(1);
+        return (totalDistance / 1000).toFixed(1);
       }
     </script>
     <script type="text/javascript">
@@ -71,11 +67,17 @@
       var pointsA = [];
       var pointsB = [];
       var pointsC = [];
+      var isClickOnLine = false;
 
       $(function() {
         map.on("click", function(event) {
+          if (isClickOnLine) {
+            isClickOnLine = false;
+            return false;
+          }
           var routeTab = getRouteTab();
-          var newPoint = event.latlng;
+          var newPoint = new L.latLng(event.latlng);
+          console.log("new point: " + newPoint);
           switch (routeTab) {
             case "a":
               color = "red";
@@ -100,10 +102,9 @@
               .setLatLng(newPoint)
               .setContent(polyline.lengthInKm() + "km")
               .openOn(map);
-            // lastMarker = L.circleMarker(newPoint, {draggable: true}).addTo(map);
           } else {
             polyline = L.polyline(points, {color: color, weight: 4, opacity: 0.9}).addTo(map);
-            // lastMarker = L.marker(newPoint, {draggable: true}).addTo(map);
+            polyline.on("click", polylineClickHandler);
           }
           if (isNearBounders(event, map)) {
             map.panTo(newPoint);
@@ -209,6 +210,34 @@
         } else {
           return false;
         }
+      }
+
+      function polylineClickHandler(e) {
+        isClickOnLine = true;
+        var newPoint = new L.latLng(e.latlng);
+        var points = e.target._latlngs;
+        var nearestPoints = getNearestPoles(points, newPoint);
+        var index = points.indexOf(nearestPoints[1]);
+        points.splice(index, 0, newPoint);
+        maker = L.marker(newPoint, {draggable: true}).addTo(map);
+        maker
+          .on('dragstart', dragStartHandler)
+          .on('drag', dragHandler)
+          .on('dragend', dragEndHandler);
+      }
+
+      function getNearestPoles(points, point) {
+        var DELTA = 0.001;
+        var result = [];
+        for (var i = 0; i < points.length - 1; i++) {
+          var pointA = points[i];
+          var pointB = points[i + 1];
+          if (L.GeometryUtil.belongsSegment(point, pointA, pointB, DELTA)) {
+            result.push(pointA, pointB);
+            break; // Get the first segment which contains the point.
+          }
+        }
+        return result;
       }
     </script>
   </body>
