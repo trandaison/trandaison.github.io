@@ -9,7 +9,7 @@
       crossorigin=""/>
     <style media="screen">
       body {padding: 0; margin: 0;}
-      #map {width: 100%; height: calc(100vh - 18px); cursor: inherit;}
+      #map {width: 100%; height: calc(100vh - 18px); cursor: inherit; text-align: center;}
       .toolbar {text-align: center;}
       .toolbar .menu-item {padding: 5px 10px; background-color: #d2d2d2;}
       .toolbar .menu-item:hover {cursor: pointer;}
@@ -26,12 +26,16 @@
       <span class="menu-item tab-c" data-tabname="c">C</span>
       <span class="menu-item" data-toolbar-actions="undo">Undo</span>
     </div>
-    <div id="map"></div>
+    <div id="map">
+      <img src="https://cdn.dribbble.com/users/503653/screenshots/3143656/fluid-loader.gif" alt="Loading..."
+        style="padding-top: calc(50vh - 50px); height: 100px;">
+    </div>
     <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
       integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
       crossorigin=""></script>
     <script src="../libraries/leaflet.geometryutil.js" charset="utf-8"></script>
     <script src="../libraries/leaflet-draggable-polyline.js" charset="utf-8"></script>
+    <script src="../libraries/pather-src.js" charset="utf-8"></script>
     <script
       src="https://code.jquery.com/jquery-3.2.1.min.js"
       integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
@@ -47,138 +51,38 @@
       }
     </script>
     <script type="text/javascript">
-      var LAT = 16.0669554, LNG = 108.2137157, Z = 16;
-      var DEFAULT_POS = new L.LatLng(LAT, LNG);
-      var map = L.map('map').setView(DEFAULT_POS, Z);
-      L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-        attribution: '&copy; Son Tran',
-        maxZoom: 20,
-        id: 'mapbox.streets'
-      }).addTo(map);
-      L.marker(DEFAULT_POS, {title: "Your position!"}).addTo(map);
-    </script>
-    <script type="text/javascript">
-      var polyline = null;
-      var color = "red";
-      var points = [];
-      var lastMarker = null;
-      var polylineA = null;
-      var polylineB = null;
-      var polylineC = null;
-      var pointsA = [];
-      var pointsB = [];
-      var pointsC = [];
-      var isClickOnLine = false;
-      var isDragingPolyline = false;
-      var ctrlHolding = false;
-
-      $(function() {
-        $(document).on("keydown", function(e) {
-          ctrlHolding = detectControlKey(e);
-        });
-
-        $(document).on("keyup", function(e) {
-          ctrlHolding = false;
-        });
-
-        map.on("click", function(event) {
-          if (ctrlHolding) {
-            alert("OK ve tu do di...");
-            return 0;
-          }
-
-          if (isClickOnLine || isDragingPolyline) {
-            isClickOnLine = false;
-            return false;
-          }
-          var routeTab = getRouteTab();
-          var newPoint = new L.latLng(event.latlng);
-          console.log("new point: " + newPoint);
-          switch (routeTab) {
-            case "a":
-              color = "red";
-              polyline = polylineA;
-              points = pointsA;
-              break;
-            case "b":
-              color = "green";
-              polyline = polylineB;
-              points = pointsB;
-              break;
-            case "c":
-              color = "blue";
-              polyline = polylineC;
-              points = pointsC;
-              break;
-          }
-          points.push(newPoint);
-          if (polyline) {
-            polyline.addLatLng(newPoint);
-            L.popup()
-              .setLatLng(newPoint)
-              .setContent(polyline.lengthInKm() + "km")
-              .openOn(map);
-          } else {
-            polyline = L.polyline(points, {edit_with_drag: true, color: color, weight: 4, opacity: 0.9}).addTo(map);
-            polyline.on("click", polylineClickHandler);
-            polyline.on('dragstart', function(e) {
-              isDragingPolyline = true;
-            }).on('dragend', function(e) {
-              isDragingPolyline = false;
-            });
-          }
-          if (isNearBounders(event, map)) {
-            map.panTo(newPoint);
-          }
-          lastMarker = L.marker(newPoint, {draggable: true}).addTo(map);
-          lastMarker
-            .on('dragstart', dragStartHandler)
-            .on('drag', dragHandler)
-            .on('dragend', dragEndHandler);
-
-          switch (routeTab) {
-            case "a":
-              polylineA = polyline;
-              pointsA = points;
-              break;
-            case "b":
-              polylineB = polyline;
-              pointsB = points;
-              break;
-            case "c":
-              polylineC = polyline;
-              pointsC = points;
-              break;
-          }
-          return event;
-        });
-      });
-    </script>
-    <script type="text/javascript">
       $(document).ready(function() {
-        $(".menu-item").on("click", function(e) {
-          $(".menu-item.active").removeClass("active");
-          switch (getRouteTab()) {
-            case "a":
-              color = "red";
-              break;
-            case "b":
-              color = "green";
-              break;
-            case "c":
-              color = "blue";
-              break;
-          }
-          $(this).addClass("active");
-        });
-
-        $('[data-toolbar-actions="undo"]').on("click", undo);
-        $(window).on("keydown", function(e) {
-          if (detectUndoByKeyboard(e)) {
-            undo(e);
-          }
-        });
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(initMap);
+        } else {
+          initMap();
+        }
       });
+    </script>
+    <script type="text/javascript">
+      var LAT, LNG, DEFAULT_POS, map, currentPosition;
+      var Z = 16;
+      function initMap(position) {
+        if (position === undefined) {
+          LAT = 16.0669554;
+          LNG = 108.2137157;
+        } else {
+          LAT = position.coords.latitude;
+          LNG = position.coords.longitude;
+        }
+        DEFAULT_POS = new L.LatLng(LAT, LNG);
+        map = L.map('map').setView(DEFAULT_POS, Z);
+        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+          attribution: '&copy; Son Tran',
+          maxZoom: 20,
+          id: 'mapbox.streets'
+        }).addTo(map);
+        currentPosition = L.marker(DEFAULT_POS, {title: "Your position!"}).addTo(map);
+        map.on("mousedown", () => {console.log("downing");});
+        map.on("mouseup", () => {console.log("released");});
+      }
+    </script>
+    <script type="text/javascript">
     </script>
     <script type="text/javascript">
       function getRouteTab() {
