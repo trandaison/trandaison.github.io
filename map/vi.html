@@ -41,7 +41,9 @@
         var totalDistance = 0; // In meter
         var points = this._latlngs;
         for (i = 0; i < points.length - 1; i++) {
-          totalDistance += points[i].distanceTo(points[i + 1]);
+          currentPoint = new L.latLng(points[i].lat, points[i].lng);
+          nextPoint = new L.latLng(points[i + 1].lat, points[i + 1].lng);
+          totalDistance += currentPoint.distanceTo(nextPoint);
         }
         return (totalDistance / 1000).toFixed(1);
       }
@@ -119,12 +121,28 @@
               .setContent(polyline.lengthInKm() + "km")
               .openOn(map);
           } else {
-            polyline = L.polyline(points, {edit_with_drag: true, color: color, weight: 4, opacity: 0.9}).addTo(map);
+            polyline = L.polyline(points, {
+              color: color,
+              weight: 4,
+              opacity: 0.9,
+              edit_with_drag: true,
+              vertices: {
+                first: true,
+                last: true,
+                middle: true,
+                insert: true,
+                destroy: true
+              },
+              distance: 5
+            }).addTo(map);
             polyline.on("click", polylineClickHandler);
-            polyline.on('dragstart', function(e) {
+            polyline.on('editDragStart', function(e) {
               isDragingPolyline = true;
-            }).on('dragend', function(e) {
-              isDragingPolyline = false;
+            }).on('editDrag', function(e) {
+            }).on("editDragEnd", function(e) {
+              setTimeout(function() {
+                isDragingPolyline = false;
+              }, 50);
             });
           }
           if (isNearBounders(event, map)) {

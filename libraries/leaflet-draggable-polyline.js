@@ -137,6 +137,7 @@ L.EditDrag.Polyline = L.Handler.extend({
       var insertAt = this._poly._latlngs.indexOf(this.closest.segment[1]);
       this._poly._latlngs.splice(insertAt, 0, this.closest);
     }
+    this._poly.fire('editDragStart', {target: e.target, originalEvent: e});
   },
 
   _markerDrag: function(e) {
@@ -144,11 +145,13 @@ L.EditDrag.Polyline = L.Handler.extend({
       this.closest.lat = e.target.getLatLng().lat;
       this.closest.lng = e.target.getLatLng().lng;
       this._poly.redraw();
+      this._poly.fire('editDrag', {target: e.target, originalEvent: e});
     }
   },
 
   _markerDragEnd: function(e) {
     this._dragging = false;
+    this._poly.fire('editDragEnd', {target: e.target, originalEvent: e});
   }
 });
 
