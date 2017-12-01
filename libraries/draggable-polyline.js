@@ -56,15 +56,26 @@ L.EditDrag.Polyline = L.Handler.extend({
   _markerDragStartHandler: function(e) {
     var newPoint = e.target.getLatLng();
     this.closest = L.GeometryUtil.closest(this._map, [this._poly], newPoint, true);
-    
+    this._dragging = true;
+    if (!this.closest) {
+      this.closest = this._getClosestPointAndSegment(newPoint);
+      var insertAt = this._poly._latlngs.indexOf(this.closest.segment[1]);
+      this._poly._latlngs.splice(insertAt, 0, this.closest.point);
+      debugger;
+    }
   },
 
   _markerDragHandler: function(e) {
-    var newPoint = e.getLatLng();
+    // var newPoint = e.getLatLng();
     // var closestPontOnSegment = this._getClosestPointAndSegment(newPoint);
     // var segmentIndex = this._poly._latlngs.indexOf(closestPontOnSegment.segment[1]);
-    this._poly._latlngs.splice(this._segmentIndex, 1, this.closest);
-    this._poly.redraw();
+    // this._poly._latlngs.splice(this._segmentIndex, 1, this.closest);
+    // this._poly.redraw();
+    if (this.closest) {
+      this.closest.lat = e.target.getLatLng().lat;
+      this.closest.lng = e.target.getLatLng().lng;
+      this._poly.redraw();
+    }
   },
 
   _markerDragEndHandler: function(e) {
