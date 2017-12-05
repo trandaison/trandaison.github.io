@@ -63,8 +63,8 @@
         var totalDistance = 0; // In meter
         var points = this._latlngs;
         for (i = 0; i < points.length - 1; i++) {
+          if (latlng && points[i].equals(latlng)) {break;}
           totalDistance += points[i].distanceTo(points[i + 1]);
-          if (latlng && points[i + 1].equals(latlng)) {break;}
         }
         return (totalDistance / 1000).toFixed(1);
       };
@@ -148,7 +148,11 @@
           var title = $(this).data("title");
           var defaultContent = contentDiv.text();
           var content = prompt(title, defaultContent);
+<<<<<<< HEAD
           if (content) {
+=======
+          if (content != null) {
+>>>>>>> Add note to route
             contentDiv.html(content);
           } else {
             // debugger;
