@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
       integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
       crossorigin=""/>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <style media="screen">
       body {padding: 0; margin: 0;}
-      #map {width: 100%; height: calc(100vh - 18px); cursor: inherit; text-align: center;}
+      #map {width: 100%; height: calc(100vh - 18px); cursor: inherit;}
       .toolbar {text-align: center;}
       .toolbar .menu-item {padding: 5px 10px; background-color: #d2d2d2;}
       .toolbar .menu-item:hover {cursor: pointer;}
@@ -17,108 +18,143 @@
       .toolbar .tab-a.active {background-color: red;}
       .toolbar .tab-b.active {background-color: green;}
       .toolbar .tab-c.active {background-color: blue;}
-      #center-point {
-        font-size: 20px;
-        color: red;
-        text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-        position: fixed;
-        left: calc(50% - 5px);
-        top: calc(50% - 8px);
-        z-index: 999;
+      .leaflet-div-icon {border-radius: 4px;}
+      .leaflet-popup-content-wrapper {
+        border-radius: 0;
+      }
+      .leaflet-popup-content {
+        line-height: inherit;
+        margin: 2px 3px;
+      }
+      .popup-control a:first-child {
+        padding: 0 5px;
+        border-left: 1px solid #c2c2c2;
+        border-right: 1px solid #c2c2c2;
+      }
+      .popup-control a:last-child {
+        padding-left: 5px;
+      }
+      .leaflet-popup-content .note-content {
+        background-color: #e2e2e2;
+        padding: 0 3px;
       }
     </style>
   </head>
   <body>
     <div class="toolbar">
-      <span class="menu-item tab-a active" data-tabname="a">A</span>
-      <span class="menu-item tab-b" data-tabname="b">B</span>
-      <span class="menu-item tab-c" data-tabname="c">C</span>
+      <span class="menu-item tab-a active" data-tabname="a" data-color="red">A</span>
+      <span class="menu-item tab-b" data-tabname="b" data-color="green">B</span>
+      <span class="menu-item tab-c" data-tabname="c" data-color="blue">C</span>
       <span class="menu-item" data-toolbar-actions="undo">Undo</span>
     </div>
-    <span id="center-point">+</span>
-    <div id="map">
-      <img src="https://cdn.dribbble.com/users/503653/screenshots/3143656/fluid-loader.gif" alt="Loading..."
-        style="padding-top: calc(50vh - 50px); height: 100px;">
-    </div>
+    <div id="map"></div>
     <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
       integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
       crossorigin=""></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.6.1/mousetrap.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"></script>
     <script src="../libraries/leaflet.geometryutil.js" charset="utf-8"></script>
     <script src="../libraries/leaflet-draggable-polyline.js" charset="utf-8"></script>
-    <script src="../libraries/pather-src.js" charset="utf-8"></script>
+    <script src="../libraries/leaflet-freehand-polyline.js" charset="utf-8"></script>
     <script
       src="https://code.jquery.com/jquery-3.2.1.min.js"
       integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
       crossorigin="anonymous"></script>
     <script type="text/javascript">
-      L.Polyline.prototype.lengthInKm = function () {
+      L.Polyline.prototype.lengthInKm = function (latlng) {
         var totalDistance = 0; // In meter
         var points = this._latlngs;
         for (i = 0; i < points.length - 1; i++) {
           totalDistance += points[i].distanceTo(points[i + 1]);
-          if (latlng && points[i + 1].equals(latlng)) {
-            break;
-          }
+          if (latlng && points[i + 1].equals(latlng)) {break;}
         }
         return (totalDistance / 1000).toFixed(1);
+      };
+      function detectMacintosh() {
+        return navigator.userAgent.toUpperCase().indexOf("MAC") > -1;
       }
     </script>
     <script type="text/javascript">
-      var ctrlHolding = false;
-      var mouseTracking = null;
-      var LAT, LNG, DEFAULT_POS, map, polyline, currentPosition;
-      var Z = 19;
-      var polyline = L.polyline({color: "red", weight: 4, opacity: 0.9});
+      var LAT = 16.0669554, LNG = 108.2137157, Z = 16;
+      var DEFAULT_POS = new L.LatLng(LAT, LNG);
+      var controlKey = detectMacintosh() ? "win" : "ctrl";
+      var map = L.map('map', {freehand: true, control_key: controlKey}).setView(DEFAULT_POS, Z);
+      L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+        attribution: '&copy; Son Tran',
+        maxZoom: 20,
+        id: 'mapbox.streets'
+      }).addTo(map);
+      L.marker(DEFAULT_POS, {title: "Your position!"}).addTo(map);
+      var polylineA = L.polyline([], {edit_with_drag: true, distance: 3, color: "red", weight: 4, opacity: 0.9}).addTo(map);
+      var polylineB = L.polyline([], {edit_with_drag: true, distance: 3, color: "green", weight: 4, opacity: 0.9}).addTo(map);
+      var polylineC = L.polyline([], {edit_with_drag: true, distance: 3, color: "blue", weight: 4, opacity: 0.9}).addTo(map);
+      var polyline = null;
 
-      $(document).ready(function() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(initMap);
-        } else {
-          initMap();
+      map.on("freehandStart beforeClick", function(e) {
+        // map.editingFreehand.setPolyColor($(".menu-item.active").data("color"));
+        switch (getRouteTab()) {
+          case "a":
+            polyline = polylineA;
+            break;
+          case "b":
+            polyline = polylineB;
+            break;
+          case "c":
+            polyline = polylineC;
+            break;
+        }
+        map.editingFreehand.setPoly(polyline);
+      });
+      map.on("freehandEnd", () => {
+        polyline = map.editingFreehand.getPoly();
+        switch (getRouteTab()) {
+          case "a":
+            polylineA = polyline;
+            break;
+          case "b":
+            polylineB = polyline;
+            break;
+          case "c":
+            polylineC = polyline;
+            break;
         }
       });
     </script>
     <script type="text/javascript">
-      function initMap(position) {
-        if (position === undefined) {
-          LAT = 16.0669554;
-          LNG = 108.2137157;
-        } else {
-          LAT = position.coords.latitude;
-          LNG = position.coords.longitude;
-        }
-        DEFAULT_POS = new L.LatLng(LAT, LNG);
-        map = L.map('map', {
-          doubleClickZoom: false,
-          scrollWheelZoom: "center"
-        }).setView(DEFAULT_POS, Z);
-        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-          attribution: '&copy; Son Tran',
-          maxZoom: 20,
-          id: 'mapbox.streets'
-        }).addTo(map);
-        currentPosition = L.marker(DEFAULT_POS, {title: "Your position!"}).addTo(map);
-        polyline.addTo(map);
-
-        var mousePressed = false;
-        map.on("mousedown", function(event) {
-          if (detectCtrlKey(event, false)) {
-            map.dragging.disable();
-            mousePressed = true;
+      $(document).ready(function() {
+        $(".menu-item").on("click", function(e) {
+          $(".menu-item.active").removeClass("active");
+          switch (getRouteTab()) {
+            case "a":
+              color = "red";
+              break;
+            case "b":
+              color = "green";
+              break;
+            case "c":
+              color = "blue";
+              break;
           }
-        }).on("mousemove", function(event) {
-          if (detectCtrlKey(event, false) && mousePressed) {
-            addLatLngToPolyline(event);
-          }
-        }).on("mouseup", function(event) {
-          mousePressed = false;
-          map.dragging.enable();
+          $(this).addClass("active");
         });
-      }
-    </script>
-    <script type="text/javascript">
+
+        $('[data-toolbar-actions="undo"]').on("click", undo);
+        $(window).on("keydown", function(e) {
+          if (detectUndoByKeyboard(e)) {
+            undo(e);
+          }
+        });
+
+        $(document).on("click", ".edit-note", function(e) {
+          var contentDiv = $(this).closest(".leaflet-popup-content").find(".note-content");
+          var title = $(this).data("title");
+          var defaultContent = contentDiv.text();
+          var content = prompt(title, defaultContent);
+          if (content) {
+            contentDiv.html(content);
+          } else {
+            // debugger;
+          }
+        });
+      });
     </script>
     <script type="text/javascript">
       function getRouteTab() {
@@ -205,14 +241,9 @@
         return navigator.userAgent.toUpperCase().indexOf("MAC") > -1;
       }
 
-      function detectCtrlKey(event, isOriginalEvent) {
-        isOriginalEvent = isOriginalEvent === undefined ? true : isOriginalEvent;
-        event = isOriginalEvent ? event : event.originalEvent;
-        return detectMacintosh() ? event.metaKey : event.ctrlKey;
-      }
-
-      function addLatLngToPolyline(event) {
-        polyline.addLatLng(event.latlng);
+      function detectControlKey(event) {
+        var MAC_CMD_KEYS = 91;
+        return detectMacintosh() ? event.keyCode == MAC_CMD_KEYS : event.ctrlKey;
       }
     </script>
   </body>
