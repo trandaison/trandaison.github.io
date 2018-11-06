@@ -1,14 +1,201 @@
-h1, h2 {
-  font-weight: normal;
+body {
+  background-image: url('./assets/img/bg-a.jpeg');
+  background-size: cover;
+  background-position: top center;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+
+.hidden {
+  display: none;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+
+.container {
+  width: 900px;
+  margin: 0 auto;
+
+  .content {
+    margin: 60px 0;
+    background: $white;
+    border: 1px solid $color-primary;
+    border-radius: 4px;
+    position: relative;
+
+    &:before,
+    &:after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      height: calc(100% - 16px);
+      z-index: -1;
+    }
+
+    &:before {
+      left: 0;
+      border-left: 1px solid $black-lighter;
+      box-shadow: -2px 0px 20px 3px #000;
+    }
+
+    &:after {
+      right: 0;
+      border-right: 1px solid $black-lighter;
+      box-shadow: 2px 0px 20px 3px #000;
+    }
+
+    .heading {
+      display: flex;
+      padding-top: 40px;
+      background: $color-primary;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+
+      .avatar {
+        width: 186px;
+        margin: 0 60px;
+
+        &__image {
+          width: 100%;
+          border-radius: 50%;
+          box-shadow: 0px 10px 25px 0px rgba(0,0,0,0.3);
+        }
+      }
+
+      .general {
+        display: inline-block;
+        color: $white-darker;
+
+        * > a {
+          color: $white-darker;
+        }
+
+        &__full-name {
+          margin: 0;
+          font-size: 4rem;
+          font-weight: $font-weight-bold;
+        }
+
+        &__basic-info {
+          display: flex;
+          justify-content: space-between;
+          width: 100%;
+
+          &:hover {
+            .general__info:not(:hover) {
+              opacity: 0;
+              pointer-events: none;
+            }
+          }
+        }
+
+        &__info {
+          position: relative;
+          opacity: 1;
+          transition: opacity .5s ease;
+
+          &__icon {
+            font-size: 16px;
+            line-height: 24px;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+          }
+
+          .fa-icon {
+            height: 40px;
+            display: inline-block;
+            vertical-align: middle;
+
+            svg {
+              display: block;
+              margin: 0 auto;
+            }
+          }
+
+          .description {
+            position: absolute;
+            display: block;
+            background: rgba(255, 255, 255, .1);
+            top: 0;
+            white-space: nowrap;
+            line-height: 40px;
+            border-radius: 20px;
+            color: $white-darker;
+            max-width: 0;
+            overflow: hidden;
+            transition: .5s ease;
+            padding: 0 0 0 40px;
+
+            &.left {
+              right: 0;
+            }
+          }
+
+          &:hover {
+            cursor: pointer;
+            background: $white-darker;
+            border-radius: 50%;
+            transition: .3s ease;
+            color: $color-primary;
+
+            .description {
+              padding: 0 20px 0 60px;
+              max-width: 500px;
+              transition: .5s ease;
+
+              &.left {
+                padding: 0 60px 0 20px;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .main-content {
+      min-height: 300px;
+
+      .left-side {
+        width: 306px;
+        height: 100vh;
+        background: $color-primary;
+      }
+    }
+
+    .footer {
+      background: $color-primary;
+      box-shadow: 0px -5px 30px 0px rgba(0, 0, 0, 0.4);
+
+      * > a {
+        color: inherit;
+      }
+
+      .contact {
+        margin: 0;
+        padding: 15px;
+        display: inline-flex;
+        justify-content: center;
+        display: flex;
+        color: $white-darker;
+        font-size: 14px;
+        line-height: 20px;
+
+        &__item {
+          margin: 0 30px;
+
+          .fa-icon {
+            display: block;
+            width: 20px;
+            margin: 0 auto;
+          }
+
+          &:first-child {
+            margin-left: 0;
+          }
+
+          &:last-child {
+            margin-right: 0;
+          }
+        }
+      }
+    }
+  }
 }
