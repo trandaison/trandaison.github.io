@@ -6,10 +6,11 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: $black;
+  font-weight: $font-weight-exlight;
 }
 
 h1, h2 {
-  font-weight: normal;
+  font-weight: $font-weight-light;
 }
 
 a {
