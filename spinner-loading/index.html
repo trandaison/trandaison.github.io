@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <title>Spinner Favicon</title>
+    <link rel=icon type=image/png href=../static/favicon.png>
+
+    <meta property="og:title" content="Spinner Favicon - Animated favicon" />
+    <meta property="og:description" content="Spinner Favicon - an open-source javascript custom loading spinner animation as the favicon" />
+    <meta property="og:image" content="img/logo.png" />
+
+    <meta itemprop="name" content="Spinner Favicon - Animated favicon">
+    <meta itemprop="description" content="Spinner Favicon - an open-source javascript custom loading spinner animation as the favicon">
+    <meta itemprop="image" content="img/logo.png">
+
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+  </head>
+  <body>
+    <div style="display: flex; margin: 20px 30px;">
+      <div style="margin-right: 50px;">
+        <a class="github-button" href="https://github.com/trandaison/spinner-favicon" target="_blank" aria-label="Goto home page">Github</a>
+        <a class="github-button" href="https://github.com/trandaison/spinner-favicon" data-icon="octicon-star"
+          data-show-count="true" aria-label="Star trandaison/spinner-favicon on GitHub">Star</a>
+        <a class="github-button" href="https://github.com/trandaison/spinner-favicon/fork"
+          data-icon="octicon-repo-forked" data-show-count="true"
+          aria-label="Fork trandaison/spinner-favicon on GitHub">Fork</a>
+        <a class="github-button" href="https://github.com/trandaison/spinner-favicon/archive/master.zip"
+          data-icon="octicon-cloud-download" aria-label="Download trandaison/spinner-favicon on GitHub">Download</a>
+      </div>
+      <div>
+        <button onclick="spin()">SPIN</button>
+        <button onclick="stop()">STOP</button>
+      </div>
+    </div>
+    <script src="main.js"></script>
+    <script>
+      function spin() {
+        SpinnerFavicon.start();
+      }
+
+      function stop() {
+        SpinnerFavicon.stop();
+      }
+    </script>
+  </body>
+</html>
